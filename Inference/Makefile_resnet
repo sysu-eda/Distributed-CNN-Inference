@@ -1,0 +1,29 @@
+SHELL = /bin/sh
+
+objects = resnet_mpi_2d.o opWrapper.o 
+Path = ${pwd}
+ACLPath = /home/pi/Git/ComputeLibrary-19.08
+Link = -c -DARCH_ARM -fpermissive -std=gnu++11 -Wno-vla \
+	-Woverloaded-virtual -Wctor-dtor-privacy -Wsign-promo -Weffc++ -Wno-format-nonliteral \
+	-Wno-overlength-strings -Wno-strict-overflow -Wlogical-op -Wnoexcept -Wstrict-null-sentinel \
+	-Wno-redundant-move -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=hard -Wno-ignored-attributes \
+	-Werror -O3 -D_GLIBCXX_USE_NANOSLEEP -DARM_COMPUTE_CPP_SCHEDULER=1 -Iinclude \
+	-I ${ACLPath}/include -I ${ACLPath}	
+	
+CC = mpic++
+
+resnet_mpi_2d : ${objects}
+	${CC} -o $@ $^ ${ACLPath}/build/utils/Utils.o ${ACLPath}/build/utils/GraphUtils.o -lpthread -L${ACLPath}/build -L. -lpthread -larm_compute_graph -larm_compute -larm_compute_core
+
+	
+resnet_mpi_2d.o : resnet_mpi_2d.cpp 
+	${CC} -o $@ -c $< ${Link} 
+	
+opWrapper.o : opWrapper.cpp
+	${CC} -o $@ -c $< ${Link} 
+	
+.PHONY : clean
+clean :
+	-rm resnet_mpi_2d $(objects)
+	
+	
